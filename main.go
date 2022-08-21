@@ -45,7 +45,7 @@ func main() {
 	accountID := *callerID.Account
 
 	if verbose {
-		fmt.Println("[searching account " + accountID + " in region " + region + "]\n")
+		fmt.Println("[searching account " + accountID + " in region " + region + "]")
 	}
 
 	ec2Client := ec2.NewFromConfig(cfg)
@@ -65,6 +65,7 @@ func main() {
 
 	for _, r := range instances.Reservations {
 		if verbose {
+			fmt.Println()
 			fmt.Println("Reservation ID: " + *r.ReservationId)
 			fmt.Println("Instance IDs:")
 		}
@@ -143,7 +144,11 @@ func main() {
 				fmt.Printf("     snap = %s\n", *e.Ebs.SnapshotId)
 			}
 
-			knownSnaps[*e.Ebs.SnapshotId] = *a.ImageId
+			if _, ok := knownAMIs[*a.ImageId]; ok {
+				knownSnaps[*e.Ebs.SnapshotId] = *a.ImageId
+			} else if verbose {
+				fmt.Printf("     ** snap ignored; %s unknown\n", *a.ImageId)
+			}
 		}
 
 		if verbose {
@@ -215,7 +220,7 @@ func main() {
 		return
 	}
 
-	for _, a := range allAMIs {
+	for a := range allAMIs {
 		_, err := ec2Client.DeregisterImage(context.TODO(), &ec2.DeregisterImageInput{ImageId: aws.String(a)})
 
 		if err != nil {
@@ -225,7 +230,7 @@ func main() {
 		}
 	}
 
-	for _, s := range allSnaps {
+	for s := range allSnaps {
 		_, err := ec2Client.DeleteSnapshot(context.TODO(), &ec2.DeleteSnapshotInput{SnapshotId: aws.String(s)})
 
 		if err != nil {
