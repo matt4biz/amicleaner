@@ -200,11 +200,14 @@ func main() {
 		delete(allSnaps, s)
 	}
 
-	if verbose || dryRun {
+	if verbose {
 		fmt.Println("known AMIs", knownAMIs)
 		fmt.Println("known vols", knownVols)
 		fmt.Println("known snaps", knownSnaps)
 		fmt.Println()
+	}
+
+	if verbose || dryRun {
 		fmt.Println("remaining AMIs", allAMIs)
 		fmt.Println("remaining snaps", allSnaps)
 		fmt.Println()
